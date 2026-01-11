@@ -12,6 +12,7 @@ import pytest
 
 
 # Default storage directory relative to project root
+# Used when no explicit storage path is configured
 DEFAULT_DATA_DIR = Path('.claude/tdd-guard/data')
 
 

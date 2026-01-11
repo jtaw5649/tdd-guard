@@ -7,6 +7,8 @@ import {
 } from './Config'
 import { ClientType } from '../contracts/types/ClientType'
 import path from 'path'
+import fs from 'fs/promises'
+import os from 'os'
 
 describe('Config', () => {
   const originalEnv = process.env
@@ -28,9 +30,20 @@ describe('Config', () => {
       config = new Config({ projectRoot })
     })
 
-    test('defaults to relative path when no projectRoot provided', () => {
+    test('defaults to relative path when no projectRoot provided', async () => {
+      const originalCwd = process.cwd
+      const tempRoot = await fs.mkdtemp(
+        path.join(os.tmpdir(), 'tdd-guard-default-')
+      )
+
+      process.cwd = () => tempRoot
+
       const defaultConfig = new Config()
+
       expect(defaultConfig.dataDir).toBe(DEFAULT_DATA_DIR)
+
+      process.cwd = originalCwd
+      await fs.rm(tempRoot, { recursive: true, force: true })
     })
 
     test('uses projectRoot to construct absolute dataDir', () => {
@@ -140,6 +153,65 @@ describe('Config', () => {
         expect(() => new Config()).toThrow(
           'CLAUDE_PROJECT_DIR must not contain path traversal'
         )
+      })
+    })
+
+    describe('CODEX_PROJECT_DIR', () => {
+      let originalCwd: typeof process.cwd
+
+      beforeEach(() => {
+        originalCwd = process.cwd
+      })
+
+      afterEach(() => {
+        process.cwd = originalCwd
+        delete process.env.CODEX_PROJECT_DIR
+      })
+
+      test('uses CODEX_PROJECT_DIR when available and no projectRoot provided', () => {
+        const codexProjectDir = '/codex/project/root'
+        process.env.CODEX_PROJECT_DIR = codexProjectDir
+        process.cwd = () => '/codex/project/root/src'
+
+        const configWithCodexDir = new Config()
+
+        expect(configWithCodexDir.dataDir).toBe(
+          path.join(codexProjectDir, '.codex', 'tdd-guard', 'data')
+        )
+      })
+    })
+
+    describe('codex config discovery', () => {
+      let originalCwd: typeof process.cwd
+
+      beforeEach(() => {
+        originalCwd = process.cwd
+      })
+
+      afterEach(() => {
+        process.cwd = originalCwd
+      })
+
+      test('uses the nearest .codex/config.toml when no projectRoot or env is set', async () => {
+        const tempRoot = await fs.mkdtemp(
+          path.join(os.tmpdir(), 'tdd-guard-codex-')
+        )
+        const codexDir = path.join(tempRoot, '.codex')
+        const nestedDir = path.join(tempRoot, 'src', 'nested')
+
+        await fs.mkdir(codexDir, { recursive: true })
+        await fs.mkdir(nestedDir, { recursive: true })
+        await fs.writeFile(path.join(codexDir, 'config.toml'), '')
+
+        process.cwd = () => nestedDir
+
+        const configWithCodexConfig = new Config()
+
+        expect(configWithCodexConfig.dataDir).toBe(
+          path.join(tempRoot, '.codex', 'tdd-guard', 'data')
+        )
+
+        await fs.rm(tempRoot, { recursive: true, force: true })
       })
     })
   })

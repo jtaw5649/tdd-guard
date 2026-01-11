@@ -77,7 +77,7 @@ See [Custom Instructions](custom-instructions.md) to customize TDD validation ru
 
 ## Data Storage
 
-TDD Guard stores context data in `.claude/tdd-guard/data/`:
+TDD Guard stores context data in `.claude/tdd-guard/data/` by default. In Codex projects (detected by `.codex/config.toml` at the project root), it stores data in `.codex/tdd-guard/data/` instead:
 
 - `instructions.md` - Your custom TDD validation rules (created automatically, never overwritten)
 - `test.json` - Latest test results from your test runner (Vitest or pytest)

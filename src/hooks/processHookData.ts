@@ -51,7 +51,7 @@ export async function processHookData(
   deps: ProcessHookDataDeps = {}
 ): Promise<ValidationResult> {
   const parsedData = JSON.parse(inputData)
-  
+
   // Initialize dependencies
   const storage = deps.storage ?? new FileStorage()
   const guardManager = new GuardManager(storage)

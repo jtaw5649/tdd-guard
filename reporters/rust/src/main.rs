@@ -221,7 +221,12 @@ fn process_output(
 
 /// Save test results to TDD Guard format
 fn save_results(project_root: &Path, output: &TddGuardOutput) -> io::Result<()> {
-    let output_dir = project_root.join(".claude").join("tdd-guard").join("data");
+    let codex_config = project_root.join(".codex").join("config.toml");
+    let output_dir = if codex_config.exists() {
+        project_root.join(".codex").join("tdd-guard").join("data")
+    } else {
+        project_root.join(".claude").join("tdd-guard").join("data")
+    };
     fs::create_dir_all(&output_dir)?;
 
     let output_file = output_dir.join("test.json");

@@ -4,7 +4,7 @@ Ensure consistent TDD validation by preventing agents from modifying guard setti
 
 ## Protect Guard Settings
 
-Prevent agents from accessing TDD Guard's configuration and state:
+Prevent agents from accessing TDD Guard's configuration and state (Claude Code only):
 
 ```json
 {

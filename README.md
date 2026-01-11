@@ -11,6 +11,8 @@ Automated Test-Driven Development enforcement for Claude Code.
 
 TDD Guard ensures Claude Code follows Test-Driven Development principles. When your agent tries to skip tests or over-implement, TDD Guard blocks the action and explains what needs to happen instead.
 
+**Codex note:** Codex support requires the forked Codex CLI from https://github.com/jtaw5649/codex.
+
 <p align="center">
   <a href="https://nizar.se/uploads/videos/tdd-guard-demo.mp4">
     <img src="docs/assets/tdd-guard-demo-screenshot.gif" alt="TDD Guard Demo" width="600">
@@ -24,7 +26,7 @@ TDD Guard ensures Claude Code follows Test-Driven Development principles. When y
 - **Test-First Enforcement** - Blocks implementation without failing tests
 - **Minimal Implementation** - Prevents code beyond current test requirements
 - **Lint Integration** - Enforces refactoring using your linting rules
-- **Multi-Language Support** - TypeScript, JavaScript, Python, PHP, Go, Rust, and Storybook
+- **Multi-Language Support** - TypeScript, JavaScript, Python, PHP, Go, Rust, C++, and Storybook
 - **Customizable Rules** - Adjust validation rules to match your TDD style
 - **Flexible Validation** - Choose faster or more capable models for your needs
 - **Session Control** - Toggle on and off mid-session
@@ -33,7 +35,8 @@ TDD Guard ensures Claude Code follows Test-Driven Development principles. When y
 
 - Node.js 22+
 - Claude Code or Anthropic API key
-- Test framework (Jest, Vitest, Storybook, pytest, PHPUnit, Go 1.24+, or Rust with cargo/cargo-nextest)
+- Codex support requires the forked Codex CLI: https://github.com/jtaw5649/codex
+- Test framework (Jest, Vitest, Storybook, pytest, PHPUnit, Go 1.24+, Rust with cargo/cargo-nextest, or C++ with GoogleTest/Catch2)
 
 ## Quick Start
 
@@ -200,7 +203,7 @@ For PHPUnit 10.x/11.x/12.x, add to your `phpunit.xml`:
 </extensions>
 ```
 
-**Note:** Specify the project root path when your phpunit.xml is not at the project root (e.g., in subdirectories or monorepos). This ensures TDD Guard can find the test results. The reporter saves results to `.claude/tdd-guard/data/test.json`.
+**Note:** Specify the project root path when your phpunit.xml is not at the project root (e.g., in subdirectories or monorepos). This ensures TDD Guard can find the test results. The reporter saves results to `.claude/tdd-guard/data/test.json` by default. In Codex projects (detected by `.codex/config.toml` at the project root), results are written to `.codex/tdd-guard/data/test.json`.
 
 </details>
 
@@ -257,6 +260,46 @@ test:
 ```
 
 **Note:** The reporter acts as a filter that passes test output through unchanged while capturing results for TDD Guard. See the [Rust reporter configuration](reporters/rust/README.md#configuration) for more details.
+
+</details>
+
+<details>
+<summary><b>C++ (GoogleTest/Catch2)</b></summary>
+
+Install the tdd-guard-cpp reporter (available in the jtaw5649/tdd-guard fork):
+
+```bash
+# Clone and build
+git clone https://github.com/jtaw5649/tdd-guard.git
+cd tdd-guard/reporters/cpp
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+cmake --build build
+
+# Install to ~/.local/bin (add to PATH if needed)
+cmake --install build --prefix ~/.local
+```
+
+Use it to capture test results from GoogleTest or Catch2:
+
+```bash
+# With GoogleTest JSON output
+./build/my_tests --gtest_output=json:- 2>&1 | tdd-guard-cpp --project-root /path/to/project --passthrough
+
+# With Catch2 JSON reporter
+./build/my_tests --reporter json 2>&1 | tdd-guard-cpp --project-root /path/to/project --passthrough
+```
+
+For shell script integration:
+
+```bash
+#!/bin/bash
+cmake --build build && \
+./build/my_tests --gtest_output=json:- 2>&1 | \
+    tee /dev/stderr | \
+    tdd-guard-cpp --project-root "$(pwd)" --passthrough
+```
+
+**Note:** The reporter supports both GoogleTest and Catch2 JSON output formats. It automatically detects the framework from the JSON structure. Requires C++26 compiler (GCC 15+ or Clang 19+). See the [C++ reporter configuration](reporters/cpp/README.md) for more details.
 
 </details>
 
