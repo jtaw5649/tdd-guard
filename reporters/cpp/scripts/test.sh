@@ -28,7 +28,7 @@ fi
 # Build tests
 echo "Building tests..."
 cmake --build "$BUILD_DIR" --target tdd-guard-cpp-tests 2>&1 | \
-    "$REPORTER" --project-root "$PROJECT_ROOT" --passthrough || true
+    "$REPORTER" --project-root "$PROJECT_ROOT" --passthrough
 
 # Run tests with Catch2 JSON reporter and capture for TDD Guard
 echo "Running tests..."

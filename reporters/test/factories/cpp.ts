@@ -61,6 +61,11 @@ export function createCppReporter(): ReporterConfig {
         stdio: 'pipe',
         encoding: 'utf8',
       })
+      if (configResult.status !== 0) {
+        throw new Error(
+          `Failed to configure cpp test project: ${configResult.stderr || ''}`
+        )
+      }
 
       if (scenario === 'singleImportError') {
         const buildTestResult = spawnSync(cmakeBinary, ['--build', '.'], {

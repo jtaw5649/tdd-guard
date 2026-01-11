@@ -94,6 +94,8 @@ auto Parser::parse(std::string_view content) -> bool {
         return false;
     }
 
+    events_.clear();
+    detected_framework_ = Framework::Unknown;
     detected_framework_ = detect_framework(json);
 
     switch (detected_framework_) {
@@ -121,6 +123,9 @@ auto Parser::parse_googletest(std::string_view json_str) -> bool {
         }
 
         for (const auto& suite : data["testsuites"]) {
+            if (!suite.is_object()) {
+                continue;
+            }
             if (!suite.contains("testsuite") || !suite["testsuite"].is_array()) {
                 continue;
             }
@@ -128,6 +133,9 @@ auto Parser::parse_googletest(std::string_view json_str) -> bool {
             std::string suite_name = suite.value("name", "");
 
             for (const auto& test : suite["testsuite"]) {
+                if (!test.is_object()) {
+                    continue;
+                }
                 TestEvent event;
                 event.name = test.value("name", "");
                 event.full_name = suite_name.empty()
@@ -141,8 +149,11 @@ auto Parser::parse_googletest(std::string_view json_str) -> bool {
                            !test["failures"].empty()) {
                     event.state = TestEvent::State::Failed;
                     for (const auto& failure : test["failures"]) {
-                        if (failure.contains("message")) {
-                            event.failure_messages.push_back(failure["message"]);
+                        if (!failure.is_object()) {
+                            continue;
+                        }
+                        if (failure.contains("message") && failure["message"].is_string()) {
+                            event.failure_messages.push_back(failure["message"].get<std::string>());
                         }
                     }
                 } else {
@@ -163,7 +174,7 @@ auto Parser::parse_catch2(std::string_view json_str) -> bool {
     try {
         auto data = json::parse(json_str);
 
-        if (!data.contains("test-run")) {
+        if (!data.contains("test-run") || !data["test-run"].is_object()) {
             return false;
         }
 
@@ -173,20 +184,32 @@ auto Parser::parse_catch2(std::string_view json_str) -> bool {
         }
 
         for (const auto& test_case : test_run["test-cases"]) {
+            if (!test_case.is_object()) {
+                continue;
+            }
             TestEvent event;
 
             std::string test_case_name;
-            if (test_case.contains("test-info")) {
+            if (test_case.contains("test-info") && test_case["test-info"].is_object()) {
                 test_case_name = test_case["test-info"].value("name", "");
             }
 
             std::vector<std::string> section_names;
-            if (test_case.contains("runs") && !test_case["runs"].empty()) {
+            if (test_case.contains("runs") && test_case["runs"].is_array() &&
+                !test_case["runs"].empty()) {
                 const auto& run = test_case["runs"][0];
-                const json* current_path = run.contains("path") ? &run["path"] : nullptr;
+                if (!run.is_object()) {
+                    continue;
+                }
+                const json* current_path = run.contains("path") && run["path"].is_array()
+                    ? &run["path"]
+                    : nullptr;
                 while (current_path != nullptr && current_path->is_array()) {
                     const json* next_path = nullptr;
                     for (const auto& path_item : *current_path) {
+                        if (!path_item.is_object()) {
+                            continue;
+                        }
                         if (path_item.value("kind", "") == "section") {
                             section_names.push_back(path_item.value("name", ""));
                             if (path_item.contains("path")) {
@@ -203,13 +226,19 @@ auto Parser::parse_catch2(std::string_view json_str) -> bool {
                 event.full_name = test_case_name;
             } else {
                 event.name = section_names.back();
-                event.full_name = section_names[0];
+                if (!test_case_name.empty() && section_names.front() != test_case_name) {
+                    event.full_name = test_case_name + "/" + section_names[0];
+                } else {
+                    event.full_name = section_names[0];
+                }
                 for (size_t i = 1; i < section_names.size(); ++i) {
                     event.full_name += "/" + section_names[i];
                 }
             }
 
-            if (test_case.contains("totals") && test_case["totals"].contains("assertions")) {
+            if (test_case.contains("totals") && test_case["totals"].is_object() &&
+                test_case["totals"].contains("assertions") &&
+                test_case["totals"]["assertions"].is_object()) {
                 auto& assertions = test_case["totals"]["assertions"];
                 int failed = assertions.value("failed", 0);
                 int skipped = assertions.value("skipped", 0);
@@ -226,13 +255,21 @@ auto Parser::parse_catch2(std::string_view json_str) -> bool {
                 event.state = TestEvent::State::Unknown;
             }
 
-            if (event.state == TestEvent::State::Failed && test_case.contains("runs")) {
+            if (event.state == TestEvent::State::Failed && test_case.contains("runs") &&
+                test_case["runs"].is_array()) {
                 for (const auto& run : test_case["runs"]) {
+                    if (!run.is_object()) {
+                        continue;
+                    }
                     if (run.contains("path") && run["path"].is_array()) {
                         for (const auto& path_item : run["path"]) {
+                            if (!path_item.is_object()) {
+                                continue;
+                            }
                             if (path_item.value("kind", "") == "assertion" &&
                                 !path_item.value("status", true) &&
-                                path_item.contains("expression")) {
+                                path_item.contains("expression") &&
+                                path_item["expression"].is_object()) {
                                 auto& expr = path_item["expression"];
                                 std::string expanded = expr.value("expanded", "");
                                 if (!expanded.empty()) {

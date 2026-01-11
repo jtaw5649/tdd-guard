@@ -2,7 +2,7 @@ project('tdd-guard-cpp', 'cpp',
     version: '0.1.0',
     license: 'MIT',
     default_options: [
-        'cpp_std=c++2c',
+        'cpp_std=c++20',
         'warning_level=3',
         'werror=true',
         'b_lto=true',

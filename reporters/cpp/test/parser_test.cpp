@@ -246,3 +246,97 @@ TEST_CASE("parse Catch2 test with section extracts section name", "[parser][catc
     CHECK(events[0].full_name == "Calculator/should add numbers correctly");
     CHECK(events[0].state == tdd_guard::TestEvent::State::Passed);
 }
+
+TEST_CASE("parse resets events between calls", "[parser]") {
+    std::string first_json = R"({
+        "testsuites": [{
+            "name": "FirstSuite",
+            "testsuite": [{
+                "name": "FirstTest",
+                "status": "RUN"
+            }]
+        }]
+    })";
+
+    std::string second_json = R"({
+        "testsuites": [{
+            "name": "SecondSuite",
+            "testsuite": [{
+                "name": "SecondTest",
+                "status": "RUN"
+            }]
+        }]
+    })";
+
+    tdd_guard::Parser parser;
+    REQUIRE(parser.parse(first_json));
+    REQUIRE(parser.parse(second_json));
+
+    auto events = parser.events();
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].name == "SecondTest");
+    CHECK(events[0].full_name == "SecondSuite.SecondTest");
+}
+
+TEST_CASE("parse Catch2 sections prefix test case name when missing", "[parser][catch2]") {
+    std::string json = R"({
+        "version": 1,
+        "test-run": {
+            "test-cases": [{
+                "test-info": {
+                    "name": "Arithmetic",
+                    "tags": ["math"]
+                },
+                "runs": [{
+                    "path": [{
+                        "kind": "section",
+                        "name": "addition",
+                        "path": [{
+                            "kind": "section",
+                            "name": "positive",
+                            "path": [{
+                                "kind": "assertion",
+                                "status": true
+                            }]
+                        }]
+                    }]
+                }],
+                "totals": {
+                    "assertions": {"passed": 1, "failed": 0}
+                }
+            }]
+        }
+    })";
+
+    tdd_guard::Parser parser;
+    REQUIRE(parser.parse(json));
+
+    auto events = parser.events();
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].name == "positive");
+    CHECK(events[0].full_name == "Arithmetic/addition/positive");
+    CHECK(events[0].state == tdd_guard::TestEvent::State::Passed);
+}
+
+TEST_CASE("parse GoogleTest ignores non-string failure messages", "[parser][googletest]") {
+    std::string json = R"({
+        "testsuites": [{
+            "name": "MathTest",
+            "testsuite": [{
+                "name": "Addition",
+                "status": "RUN",
+                "failures": [{
+                    "message": 123
+                }]
+            }]
+        }]
+    })";
+
+    tdd_guard::Parser parser;
+    REQUIRE(parser.parse(json));
+
+    auto events = parser.events();
+    REQUIRE(events.size() == 1);
+    CHECK(events[0].state == tdd_guard::TestEvent::State::Failed);
+    CHECK_FALSE(events[0].error_message().has_value());
+}

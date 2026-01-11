@@ -6,7 +6,7 @@ C++ test reporter that captures test results for TDD Guard validation from Googl
 
 ## Requirements
 
-- C++26 compatible compiler (GCC 15+ or Clang 19+)
+- C++20 compatible compiler (GCC 10+ or Clang 10+)
 - CMake 3.25+
 - TDD Guard installed globally
 
@@ -82,12 +82,12 @@ PROJECT_ROOT := $(shell pwd)
 
 .PHONY: test
 test:
-	cmake -S . -B build && cmake --build build
-	./build/my_tests --gtest_output=json:- 2>&1 | tdd-guard-cpp --project-root $(PROJECT_ROOT) --passthrough
+  cmake -S . -B build && cmake --build build
+  ./build/my_tests --gtest_output=json:- 2>&1 | tdd-guard-cpp --project-root $(PROJECT_ROOT) --passthrough
 
 .PHONY: test-tdd
 test-tdd:
-	tdd-guard on && $(MAKE) test
+  tdd-guard on && $(MAKE) test
 ```
 
 ## Configuration

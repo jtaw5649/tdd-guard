@@ -34,13 +34,14 @@ auto append_to_field(std::optional<std::string>& field, std::string_view text) -
 }
 
 auto is_boilerplate(std::string_view line) -> bool {
-    return line.contains("In file included from") ||
-           line.contains("In instantiation of") ||
-           line.contains("required from");
+    return line.find("In file included from") != std::string_view::npos ||
+           line.find("In instantiation of") != std::string_view::npos ||
+           line.find("required from") != std::string_view::npos;
 }
 
 auto has_error_indicator(std::string_view line) -> bool {
-    return line.contains("error:") || line.contains("fatal error:");
+    return line.find("error:") != std::string_view::npos ||
+           line.find("fatal error:") != std::string_view::npos;
 }
 
 auto parse_error_line(std::string_view line) -> std::optional<CompilationError> {
