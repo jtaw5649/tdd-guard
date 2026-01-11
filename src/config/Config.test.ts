@@ -179,6 +179,56 @@ describe('Config', () => {
           path.join(codexProjectDir, '.codex', 'tdd-guard', 'data')
         )
       })
+
+      test('projectRoot takes precedence over CODEX_PROJECT_DIR', () => {
+        process.env.CODEX_PROJECT_DIR = '/codex/project/root'
+        process.cwd = () => '/codex/project/root/src'
+
+        const configWithProjectRoot = new Config({
+          projectRoot: '/override/root',
+        })
+
+        expect(configWithProjectRoot.dataDir).toBe(
+          path.join('/override/root', '.claude', 'tdd-guard', 'data')
+        )
+      })
+
+      test('throws error when CODEX_PROJECT_DIR is not an absolute path', () => {
+        process.env.CODEX_PROJECT_DIR = 'relative/path'
+
+        expect(() => new Config()).toThrow(
+          'CODEX_PROJECT_DIR must be an absolute path'
+        )
+      })
+
+      test('throws error when cwd is outside CODEX_PROJECT_DIR', () => {
+        process.env.CODEX_PROJECT_DIR = '/codex/project/root'
+        process.cwd = () => '/other/path'
+
+        expect(() => new Config()).toThrow(
+          'CODEX_PROJECT_DIR must contain the current working directory'
+        )
+      })
+
+      test('uses CODEX_PROJECT_DIR when cwd is deeply nested within it', () => {
+        process.env.CODEX_PROJECT_DIR = '/codex/project/root'
+        process.cwd = () => '/codex/project/root/src/nested/deeply'
+
+        const configWithNestedCwd = new Config()
+
+        expect(configWithNestedCwd.dataDir).toBe(
+          path.join('/codex/project/root', '.codex', 'tdd-guard', 'data')
+        )
+      })
+
+      test('throws error when CODEX_PROJECT_DIR contains path traversal', () => {
+        process.env.CODEX_PROJECT_DIR = '/codex/../other'
+        process.cwd = () => '/other'
+
+        expect(() => new Config()).toThrow(
+          'CODEX_PROJECT_DIR must not contain path traversal'
+        )
+      })
     })
 
     describe('codex config discovery', () => {

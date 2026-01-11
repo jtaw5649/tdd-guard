@@ -6,7 +6,7 @@ C++ test reporter that captures test results for TDD Guard validation from Googl
 
 ## Requirements
 
-- C++26 compatible compiler (GCC 15+ or Clang 19+)
+- C++20 compatible compiler (GCC 10+ or Clang 10+)
 - CMake 3.25+
 - TDD Guard installed globally
 

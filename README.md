@@ -299,7 +299,7 @@ cmake --build build && \
     tdd-guard-cpp --project-root "$(pwd)" --passthrough
 ```
 
-**Note:** The reporter supports both GoogleTest and Catch2 JSON output formats. It automatically detects the framework from the JSON structure. Requires C++26 compiler (GCC 15+ or Clang 19+). See the [C++ reporter configuration](reporters/cpp/README.md) for more details.
+**Note:** The reporter supports both GoogleTest and Catch2 JSON output formats. It automatically detects the framework from the JSON structure. Requires a C++20 compiler (GCC 10+ or Clang 10+). See the [C++ reporter configuration](reporters/cpp/README.md) for more details.
 
 </details>
 

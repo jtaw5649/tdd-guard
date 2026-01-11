@@ -57,3 +57,12 @@ def test_plugin_handles_empty_config_value():
     
     # Should fall back to default when config is empty
     assert plugin.storage_dir == DEFAULT_DATA_DIR
+
+
+def test_plugin_ignores_invalid_codex_project_dir(monkeypatch):
+    """Test that invalid CODEX_PROJECT_DIR is ignored."""
+    monkeypatch.setenv("CODEX_PROJECT_DIR", "relative/path")
+
+    plugin = TDDGuardPytestPlugin(create_config(""))
+
+    assert plugin.storage_dir == DEFAULT_DATA_DIR
