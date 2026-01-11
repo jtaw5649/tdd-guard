@@ -81,6 +81,10 @@ htmlcov/
 .tox/
 reporters/pytest/pytest.ini
 
+# C++ reporter build artifacts
+reporters/cpp/build/
+reporters/test/artifacts/cpp/**/build/
+
 # Claude indexer
 .claude-indexer/
 
