@@ -72,4 +72,4 @@ When triggered, TDD Guard clears all transient data while preserving the guard s
 
 - No manual intervention needed - clearing happens automatically
 - To toggle the guard on/off, use the [quick commands](quick-commands.md)
-- For debugging, check `.claude/tdd-guard/` to see stored data
+- For debugging, check `.claude/tdd-guard/` to see stored data. Codex projects (detected by `.codex/config.toml` at the project root) store data in `.codex/tdd-guard/`.

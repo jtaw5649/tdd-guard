@@ -71,7 +71,7 @@ test-tdd:
 
 ### Project Root
 
-The `--project-root` flag must be an absolute path to your project directory. This is where the `.claude/tdd-guard/data/test.json` file will be written.
+The `--project-root` flag must be an absolute path to your project directory. By default, results are written to `.claude/tdd-guard/data/test.json`. If a `.codex/config.toml` file is present at the project root, results are written to `.codex/tdd-guard/data/test.json`.
 
 ### Flags
 
@@ -81,7 +81,7 @@ The `--project-root` flag must be an absolute path to your project directory. Th
 
 ## How It Works
 
-The reporter captures JSON-formatted test output, passes it through unchanged to stdout, and saves TDD Guard-formatted results to `.claude/tdd-guard/data/test.json`.
+The reporter captures JSON-formatted test output, passes it through unchanged to stdout, and saves TDD Guard-formatted results to `.claude/tdd-guard/data/test.json` (or `.codex/tdd-guard/data/test.json` when a `.codex/config.toml` is present at the project root).
 
 ## License
 

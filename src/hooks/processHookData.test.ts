@@ -408,6 +408,7 @@ describe('processHookData', () => {
       expect(result).toEqual(BLOCK_RESULT)
     })
   })
+
 })
 
 // Test setup helper

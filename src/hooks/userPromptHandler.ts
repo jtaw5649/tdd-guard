@@ -20,7 +20,7 @@ export class UserPromptHandler {
       return undefined
     }
     
-    const command = data.prompt?.toLowerCase()
+    const command = data.prompt?.trim()?.toLowerCase()
     
     switch (command) {
       case this.GUARD_COMMANDS.ON:

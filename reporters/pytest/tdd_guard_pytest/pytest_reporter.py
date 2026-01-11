@@ -12,7 +12,9 @@ import pytest
 
 
 # Default storage directory relative to project root
+# Used when no explicit storage path is configured
 DEFAULT_DATA_DIR = Path('.claude/tdd-guard/data')
+DEFAULT_CODEX_DATA_DIR = Path('.codex/tdd-guard/data')
 
 
 class TDDGuardPytestPlugin:
@@ -25,6 +27,10 @@ class TDDGuardPytestPlugin:
     def _determine_storage_dir(self, config, cwd):
         """Determine the storage directory based on config and current working directory."""
         current_dir = cwd if cwd is not None else Path.cwd()
+
+        codex_project_dir = self._get_validated_codex_project_dir(current_dir)
+        if codex_project_dir:
+            return Path(codex_project_dir) / DEFAULT_CODEX_DATA_DIR
         
         # Try to get project root from config
         project_root = self._get_project_root_from_config(config)
@@ -37,9 +43,15 @@ class TDDGuardPytestPlugin:
         
         # Validate that cwd is within project root
         if self._is_cwd_within_project_root(current_dir, project_root):
-            return Path(project_root) / DEFAULT_DATA_DIR
+            return self._get_project_data_dir(project_root)
         else:
             return DEFAULT_DATA_DIR
+
+    def _get_project_data_dir(self, project_root):
+        project_path = Path(project_root)
+        if (project_path / '.codex' / 'config.toml').exists():
+            return project_path / DEFAULT_CODEX_DATA_DIR
+        return project_path / DEFAULT_DATA_DIR
     
     def _get_project_root_from_config(self, config):
         """Extract project root from config if available."""
@@ -54,6 +66,24 @@ class TDDGuardPytestPlugin:
             return True
         except ValueError:
             return False
+
+    def _get_validated_codex_project_dir(self, cwd):
+        project_dir = os.environ.get("CODEX_PROJECT_DIR")
+        if not project_dir:
+            return None
+
+        if not os.path.isabs(project_dir):
+            return None
+
+        if ".." in Path(project_dir).parts:
+            return None
+
+        try:
+            Path(cwd).resolve().relative_to(Path(project_dir).resolve())
+        except ValueError:
+            return None
+
+        return project_dir
     
     def pytest_collectreport(self, report):
         """Capture collection errors (import failures, etc.)"""

@@ -2,7 +2,7 @@
 
 C++ test reporter that captures test results for TDD Guard validation from GoogleTest and Catch2.
 
-**Note:** This reporter is part of the [TDD Guard](https://github.com/nizos/tdd-guard) project, which ensures Claude Code follows Test-Driven Development principles.
+**Note:** This reporter is only available in the [jtaw5649/tdd-guard](https://github.com/jtaw5649/tdd-guard) fork.
 
 ## Requirements
 
@@ -28,7 +28,7 @@ brew install tdd-guard
 
 ```bash
 # Clone and build
-git clone https://github.com/nizos/tdd-guard.git
+git clone https://github.com/jtaw5649/tdd-guard.git
 cd tdd-guard/reporters/cpp
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build
@@ -82,19 +82,19 @@ PROJECT_ROOT := $(shell pwd)
 
 .PHONY: test
 test:
-  cmake -S . -B build && cmake --build build
-  ./build/my_tests --gtest_output=json:- 2>&1 | tdd-guard-cpp --project-root $(PROJECT_ROOT) --passthrough
+	cmake -S . -B build && cmake --build build
+	./build/my_tests --gtest_output=json:- 2>&1 | tdd-guard-cpp --project-root $(PROJECT_ROOT) --passthrough
 
 .PHONY: test-tdd
 test-tdd:
-  tdd-guard on && $(MAKE) test
+	tdd-guard on && $(MAKE) test
 ```
 
 ## Configuration
 
 ### Project Root
 
-The `--project-root` flag must be an absolute path to your project directory. This is where the `.claude/tdd-guard/data/test.json` file will be written.
+The `--project-root` flag must be an absolute path to your project directory. Results are written to `.claude/tdd-guard/data/test.json` by default, or `.codex/tdd-guard/data/test.json` when a `.codex/config.toml` exists at the project root.
 
 ### Flags
 
@@ -113,7 +113,7 @@ The reporter:
 1. Reads JSON-formatted test output from stdin
 2. Passes the output through unchanged to stdout (with `--passthrough`)
 3. Parses the JSON to extract test results
-4. Saves TDD Guard-formatted results to `.claude/tdd-guard/data/test.json`
+4. Saves TDD Guard-formatted results to `.claude/tdd-guard/data/test.json` by default (or `.codex/tdd-guard/data/test.json` when a `.codex/config.toml` exists at the project root)
 
 ### Output Format
 

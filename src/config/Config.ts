@@ -1,4 +1,5 @@
 import path from 'path'
+import fs from 'fs'
 import { ConfigOptions } from '../contracts/types/ConfigOptions'
 import { ClientType } from '../contracts/types/ClientType'
 
@@ -12,6 +13,7 @@ const INSTRUCTIONS_FILENAME = 'instructions.md'
 export const DEFAULT_MODEL_VERSION = 'claude-sonnet-4-0'
 export const DEFAULT_CLIENT: ClientType = 'sdk'
 export const DEFAULT_DATA_DIR = path.join('.claude', 'tdd-guard', 'data')
+export const DEFAULT_CODEX_DATA_DIR = path.join('.codex', 'tdd-guard', 'data')
 
 const VALID_CLIENTS = new Set<string>(['api', 'cli', 'sdk'])
 const MODEL_TYPE_TO_CLIENT: Record<string, ClientType> = {
@@ -41,15 +43,22 @@ export class Config {
   }
 
   private getDataDir(options?: ConfigOptions): string {
-    // Determine the base directory
-    const baseDir = options?.projectRoot ?? this.getValidatedClaudeProjectDir()
-
-    // If we have a base directory, construct the full path
-    if (baseDir) {
-      return path.join(baseDir, DEFAULT_DATA_DIR)
+    const projectRoot = options?.projectRoot
+    if (projectRoot) {
+      return path.join(projectRoot, DEFAULT_DATA_DIR)
     }
 
-    // Default to relative path
+    const claudeProjectDir = this.getValidatedClaudeProjectDir()
+    if (claudeProjectDir) {
+      return path.join(claudeProjectDir, DEFAULT_DATA_DIR)
+    }
+
+    const codexProjectDir =
+      this.getValidatedCodexProjectDir() ?? this.findCodexConfigRoot()
+    if (codexProjectDir) {
+      return path.join(codexProjectDir, DEFAULT_CODEX_DATA_DIR)
+    }
+
     return DEFAULT_DATA_DIR
   }
 
@@ -148,6 +157,49 @@ export class Config {
     }
 
     return projectDir
+  }
+
+  private getValidatedCodexProjectDir(): string | null {
+    const projectDir = process.env.CODEX_PROJECT_DIR
+    if (!projectDir) {
+      return null
+    }
+
+    if (!path.isAbsolute(projectDir)) {
+      throw new Error('CODEX_PROJECT_DIR must be an absolute path')
+    }
+
+    if (projectDir.includes('..')) {
+      throw new Error('CODEX_PROJECT_DIR must not contain path traversal')
+    }
+
+    const cwd = process.cwd()
+    if (!cwd.startsWith(projectDir)) {
+      throw new Error(
+        'CODEX_PROJECT_DIR must contain the current working directory'
+      )
+    }
+
+    return projectDir
+  }
+
+  private findCodexConfigRoot(): string | null {
+    let current = process.cwd()
+
+    for (;;) {
+      const configPath = path.join(current, '.codex', 'config.toml')
+      if (fs.existsSync(configPath)) {
+        return current
+      }
+
+      const parent = path.dirname(current)
+      if (parent === current) {
+        break
+      }
+      current = parent
+    }
+
+    return null
   }
 }
 

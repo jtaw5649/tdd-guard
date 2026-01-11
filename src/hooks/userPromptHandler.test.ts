@@ -58,6 +58,15 @@ describe('UserPromptHandler', () => {
       expect(await guardManager.isEnabled()).toBe(false)
     })
 
+    test('disables guard when prompt has trailing whitespace', async () => {
+      await guardManager.enable() // Ensure guard starts enabled
+      const hookData = testData.userPromptSubmit({ prompt: 'tdd-guard off\n' })
+
+      await handler.processUserCommand(JSON.stringify(hookData))
+
+      expect(await guardManager.isEnabled()).toBe(false)
+    })
+
     test('enables guard when prompt is "TDD-Guard ON" (mixed case)', async () => {
       await guardManager.disable() // Ensure guard starts disabled
       const hookData = testData.userPromptSubmit({ prompt: 'TDD-Guard ON' })

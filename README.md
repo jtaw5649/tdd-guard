@@ -11,6 +11,8 @@ Automated Test-Driven Development enforcement for Claude Code.
 
 TDD Guard ensures Claude Code follows Test-Driven Development principles. When your agent tries to skip tests or over-implement, TDD Guard blocks the action and explains what needs to happen instead.
 
+**Codex note:** Codex support requires the forked Codex CLI from https://github.com/jtaw5649/codex.
+
 <p align="center">
   <a href="https://nizar.se/uploads/videos/tdd-guard-demo.mp4">
     <img src="docs/assets/tdd-guard-demo-screenshot.gif" alt="TDD Guard Demo" width="600">
@@ -33,6 +35,7 @@ TDD Guard ensures Claude Code follows Test-Driven Development principles. When y
 
 - Node.js 22+
 - Claude Code or Anthropic API key
+- Codex support requires the forked Codex CLI: https://github.com/jtaw5649/codex
 - Test framework (Jest, Vitest, Storybook, pytest, PHPUnit, Go 1.24+, Rust with cargo/cargo-nextest, or C++ with GoogleTest/Catch2)
 
 ## Quick Start
@@ -200,7 +203,7 @@ For PHPUnit 10.x/11.x/12.x, add to your `phpunit.xml`:
 </extensions>
 ```
 
-**Note:** Specify the project root path when your phpunit.xml is not at the project root (e.g., in subdirectories or monorepos). This ensures TDD Guard can find the test results. The reporter saves results to `.claude/tdd-guard/data/test.json`.
+**Note:** Specify the project root path when your phpunit.xml is not at the project root (e.g., in subdirectories or monorepos). This ensures TDD Guard can find the test results. The reporter saves results to `.claude/tdd-guard/data/test.json` by default. In Codex projects (detected by `.codex/config.toml` at the project root), results are written to `.codex/tdd-guard/data/test.json`.
 
 </details>
 
@@ -263,11 +266,11 @@ test:
 <details>
 <summary><b>C++ (GoogleTest/Catch2)</b></summary>
 
-Install the tdd-guard-cpp reporter:
+Install the tdd-guard-cpp reporter (available in the jtaw5649/tdd-guard fork):
 
 ```bash
 # Clone and build
-git clone https://github.com/nizos/tdd-guard.git
+git clone https://github.com/jtaw5649/tdd-guard.git
 cd tdd-guard/reporters/cpp
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
 cmake --build build

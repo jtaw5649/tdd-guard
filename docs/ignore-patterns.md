@@ -22,7 +22,7 @@ By default, TDD Guard ignores files with these extensions:
 
 ## Custom Ignore Patterns
 
-You can configure custom ignore patterns by creating a `config.json` file in the TDD Guard data directory (`.claude/tdd-guard/data/`):
+You can configure custom ignore patterns by creating a `config.json` file in the TDD Guard data directory. By default this is `.claude/tdd-guard/data/`. In Codex projects (detected by `.codex/config.toml` at the project root), it is `.codex/tdd-guard/data/`:
 
 ```json
 {
@@ -65,7 +65,7 @@ If no custom patterns are configured, the default patterns listed above are used
 
 ### Updating Patterns
 
-1. Create or edit `.claude/tdd-guard/data/config.json`
+1. Create or edit `.claude/tdd-guard/data/config.json` (Codex projects use `.codex/tdd-guard/data/config.json`)
 2. Add your `ignorePatterns` array
 3. The changes take effect immediately
 

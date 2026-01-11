@@ -4,7 +4,7 @@ Customize TDD Guard's validation rules to match your specific TDD practices.
 
 ## How It Works
 
-TDD Guard uses validation rules to enforce TDD principles. You can override these default rules by creating a custom instructions file at `.claude/tdd-guard/data/instructions.md`.
+TDD Guard uses validation rules to enforce TDD principles. You can override these default rules by creating a custom instructions file at `.claude/tdd-guard/data/instructions.md`. In Codex projects (detected by `.codex/config.toml` at the project root), use `.codex/tdd-guard/data/instructions.md` instead.
 
 ## Automatic Setup
 
@@ -18,7 +18,7 @@ Your custom instructions are never overwritten - once created, the file remains 
 
 ## Creating Custom Instructions
 
-1. Edit `.claude/tdd-guard/data/instructions.md`
+1. Edit `.claude/tdd-guard/data/instructions.md` (Codex projects use `.codex/tdd-guard/data/instructions.md`)
 2. Adjust or replace the default rules with your TDD requirements
 3. Changes take effect immediately - no restart needed
 
@@ -26,7 +26,7 @@ Your custom instructions are never overwritten - once created, the file remains 
 
 When updating TDD Guard, you may want the latest default instructions:
 
-1. Delete `.claude/tdd-guard/data/instructions.md`
+1. Delete `.claude/tdd-guard/data/instructions.md` (Codex projects use `.codex/tdd-guard/data/instructions.md`)
 2. Trigger the SessionStart hook (start new session or use `/clear`)
 3. The latest defaults will be created automatically
 
